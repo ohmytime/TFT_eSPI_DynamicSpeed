@@ -75,7 +75,7 @@ inline void TFT_eSPI::begin_tft_write(void){
   if (locked) {
     locked = false; // Flag to show SPI access now unlocked
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
-    spi.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE));
+    spi.beginTransaction(SPISettings(spi_write_speed * 1000000, MSBFIRST, TFT_SPI_MODE));
 #endif
     CS_L;
     SET_BUS_WRITE_MODE;  // Some processors (e.g. ESP32) allow recycling the tx buffer when rx is not used
@@ -87,7 +87,7 @@ void TFT_eSPI::begin_nin_write(void){
   if (locked) {
     locked = false; // Flag to show SPI access now unlocked
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
-    spi.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE));
+    spi.beginTransaction(SPISettings(spi_write_speed * 1000000, MSBFIRST, TFT_SPI_MODE));
 #endif
     CS_L;
     SET_BUS_WRITE_MODE;  // Some processors (e.g. ESP32) allow recycling the tx buffer when rx is not used
@@ -169,6 +169,16 @@ inline void TFT_eSPI::end_tft_read(void){
    if(!inTransaction) {CS_H;}
 #endif
   SET_BUS_WRITE_MODE;
+}
+
+/***************************************************************************************
+** Function name:           setSPISpeed
+** Description:             Set SPI speed
+***************************************************************************************/
+void TFT_eSPI::setSPISpeed(uint8_t speed)
+{
+  if(speed > 0 && speed < 80)
+    spi_write_speed = speed;
 }
 
 /***************************************************************************************
@@ -470,6 +480,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   _cp437    = true;     // Legacy GLCD font bug fix
   _utf8     = true;     // UTF8 decoding enabled
 
+  spi_write_speed = SPI_FREQUENCY / 1000000; // Set SPI frequency from user define
+  
 #if defined (FONT_FS_AVAILABLE) && defined (SMOOTH_FONT)
   fs_font  = true;     // Smooth font filing system or array (fs_font = false) flag
 #endif
@@ -5993,7 +6005,7 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   tft_settings.tft_spi_freq = 0;
 #else
   tft_settings.serial = true;
-  tft_settings.tft_spi_freq = SPI_FREQUENCY/100000;
+  tft_settings.tft_spi_freq = spi_write_speed;
   #ifdef SPI_READ_FREQUENCY
     tft_settings.tft_rd_freq = SPI_READ_FREQUENCY/100000;
   #endif
