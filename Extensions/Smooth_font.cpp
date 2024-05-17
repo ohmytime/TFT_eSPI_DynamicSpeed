@@ -130,12 +130,12 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
   gFont.yAdvance = (uint16_t)readInt32(); // Font size in points, not pixels
                              readInt32(); // discard
   gFont.ascent   = (uint16_t)readInt32(); // top of "d"
-  gFont.descent  = (uint16_t)readInt32(); // bottom of "p"
+  gFont.descent  = (uint16_t)readInt32() + 2; // bottom of "p"
 
   // These next gFont values might be updated when the Metrics are fetched
   gFont.maxAscent  = gFont.ascent;   // Determined from metrics
   gFont.maxDescent = gFont.descent;  // Determined from metrics
-  gFont.yAdvance   = gFont.ascent + gFont.descent + 4;
+  gFont.yAdvance   = gFont.ascent + gFont.descent;
   gFont.spaceWidth = gFont.yAdvance / 4;  // Guess at space width
 
   fontLoaded = true;
